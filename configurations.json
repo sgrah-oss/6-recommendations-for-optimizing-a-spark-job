@@ -1,0 +1,6 @@
+{
+  "MASTER_CONF": "local[1]",
+  "DRIVER_MEMORY": "500m",
+  "EXECUTOR_MEMORY": "500m",
+  "spark.sql.shuffle.partitions": 200
+}
