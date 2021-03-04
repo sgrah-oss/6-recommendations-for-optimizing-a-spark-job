@@ -11,23 +11,21 @@ INSEE_FILE_PATH: str = "dataset/MDB-INSEE-V2.csv"
 POPULATION_THRESHOLD: int = 1000
 FILE_SAVED_PATH: str = "output/result_pipeline.csv"
 CONFIGURATION_FILE_PATH: str = 'configurations.json'
+MLFLOW_EXPERIMENT_NAME = "pipeline spark temperature"
 
 with open(CONFIGURATION_FILE_PATH) as json_file:
     configurations = json.load(json_file)
 
 
 def build_spark_session(master_conf: str,
-                        driver_memory: str,
-                        executor_memory: str) -> pyspark.sql.session.SparkSession:
+                        spark_conf: pyspark.conf.SparkConf) -> pyspark.sql.session.SparkSession:
     spark = pyspark.sql.SparkSession.builder \
         .master(master_conf) \
         .appName("Calcul des variations historiques de température par commune") \
-        .config("spark.driver.memory", driver_memory) \
-        .config("spark.executor.memory", executor_memory) \
+        .config(conf=spark_conf) \
         .getOrCreate()
     print("Information about Spark cluster")
     print("Application Name : " + spark.sparkContext.appName)
-    print("Cluster resources : " + spark.sparkContext.master)
     print("Web URI for UI : " + spark.sparkContext.uiWebUrl)
     print("PySpark version : " + spark.sparkContext.version)
     return spark
@@ -95,21 +93,29 @@ def write_dataframe_to_disk(dataframe: pyspark.sql.dataframe.DataFrame,
                         sep=",",
                         header=True)
 
+try:
+    experiment = mlflow.get_experiment_by_name(MLFLOW_EXPERIMENT_NAME)
+    experiment_id = experiment.experiment_id
+except:
+    print("Create a new mlflow experiment")
+    experiment_id = mlflow.create_experiment(MLFLOW_EXPERIMENT_NAME)
 
 
 if __name__ == "__main__":
-    with mlflow.start_run(run_name="pipeline spark temperature variation by commune"):
+    with mlflow.start_run(run_name="essai simon final",
+                          experiment_id=experiment_id):
         start_time = time.time()
-
+        # Spark configurations
+        spark_conf = pyspark.conf.SparkConf()
         for conf, conf_value in configurations.items():
             mlflow.log_param(conf, conf_value)
+            if conf not in ["spark.driver.cores"]:
+                spark_conf.set(conf, conf_value)
 
-        spark = build_spark_session(configurations['MASTER_CONF'],
-                                    configurations['DRIVER_MEMORY'],
-                                    configurations['EXECUTOR_MEMORY'])
-        # Spark configurations
-        spark.conf.set("spark.sql.shuffle.partitions", configurations['SHUFFLE_PARTITIONS'])
-
+        spark = build_spark_session(master_conf="local[" + str(configurations['spark.driver.cores']) + "]",
+                                    spark_conf=spark_conf)
+        print(spark.sparkContext._conf.getAll())
+        # Data Pipeline
         meteo = read_meteo_file(METEO_FILE_PATH)
         meteo = clean_meteo_dataset(meteo)
         meteo = filter_communes_not_null(meteo)
