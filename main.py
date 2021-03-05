@@ -104,7 +104,6 @@ except:
 if __name__ == "__main__":
     with mlflow.start_run(run_name="essai simon final",
                           experiment_id=experiment_id):
-        start_time = time.time()
         # Spark configurations
         spark_conf = pyspark.conf.SparkConf()
         for conf, conf_value in configurations.items():
@@ -116,6 +115,7 @@ if __name__ == "__main__":
                                     spark_conf=spark_conf)
         print(spark.sparkContext._conf.getAll())
         # Data Pipeline
+        start_time = time.time()
         meteo = read_meteo_file(METEO_FILE_PATH)
         meteo = clean_meteo_dataset(meteo)
         meteo = filter_communes_not_null(meteo)
