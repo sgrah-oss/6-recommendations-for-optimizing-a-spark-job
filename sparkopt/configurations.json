@@ -1,0 +1,13 @@
+{
+  "spark.driver.cores": '6',
+  "spark.driver.memory": "4g",
+  "spark.executor.memory": "4g",
+  "spark.sql.shuffle.partitions": '10',
+  "spark.executor.fraction": '0.6',
+  "spark.shuffle.file.buffer": "32k",
+  "spark.file.transferTo": "false",
+  "spark.sql.files.maxPartitionBytes": "10m",
+  "spark.sql.autoBroadcastJoinThreshold": '-1',
+  "is_parquet_file": 1,
+  "persistence_level": 0
+}
