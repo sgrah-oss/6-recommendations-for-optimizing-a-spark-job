@@ -3,8 +3,8 @@ from tqdm import tqdm
 import mlflow
 from sklearn.model_selection import ParameterGrid
 
-from main import build_spark_session, data_treatment_pipeline, set_spark_configurations
-
+from main import data_treatment_pipeline
+from sparkopt.spark_settings import set_spark_configurations, build_spark_session
 
 METEO_FILE_PATH: str = "dataset/meteo"
 INSEE_FILE_PATH: str = "dataset/insee"
@@ -31,7 +31,6 @@ try:
 except:
     print("Create a new mlflow experiment")
     experiment_id = mlflow.create_experiment(MLFLOW_EXPERIMENT_NAME)
-
 
 if __name__ == "__main__":
     for configurations in tqdm(list_of_all_conf_parameter_combinations):
